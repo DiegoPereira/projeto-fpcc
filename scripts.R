@@ -36,9 +36,23 @@ print(mac_diretamente)
 # regressao de mars
 
 fit <- earth(Quantidade.de.Pessoas~., treino)
+summary(fit)
 treino$predictions <- predict(fit, treino)
 
+fit <- earth(treino$Quantidade.de.Pessoas~treino$Quantidade.de.Macs)
+summary(fit)
+treino$predictions <- predict(fit, treino)
+
+fit <- earth(Quantidade.de.Pessoas~Quantidade.de.Macs, data=treino)
+summary(fit)
+
+
 calc_r2(teste$Quantidade.de.Pessoas, teste$predictions, teste)
+
+
+
+
+
 
 rmse <- mean((teste$Quantidade.de.Pessoas - predictions)^2)
 print(rmse)
@@ -82,5 +96,14 @@ performance( prediction( z, y ), "auc" )@y.values[[1]]
 
 
 
+### Com naza
 
+cor(treino)
+cor.test(treino$Quantidade.de.Macs, treino$Quantidade.de.Pessoas)
+
+
+
+#Caret
+http://rpubs.com/nazareno/regressao-previsao
+http://r4ds.had.co.nz/model.html
 
