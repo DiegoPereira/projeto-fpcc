@@ -25,19 +25,19 @@ import datetime
 
 a = DH("web.cloud.lsd.ufcg.edu.br:41106")
 
-video6_1, video6_2 = datetime.datetime(2016, 7, 6, 14, 27), datetime.datetime(2016, 7, 6, 15, 27)
+video6_1, video6_2 = datetime.datetime(2016, 7, 15, 7, 58), datetime.datetime(2016, 7, 15, 8, 13)
 
-z = a.pesquisa(video6_1, video6_2, "PontoDeOnibus-pesquisa5")
-
-
-video7_1, video7_2 = datetime.datetime(2016, 7, 7, 14, 32), datetime.datetime(2016, 7, 7, 15, 32)
-
-z = a.pesquisa(video7_1, video7_2, "PontoDeOnibus-pesquisa6")
+z = a.pesquisa(video6_1, video6_2, "PontoDeOnibus-pesquisa9")
 
 
-video8_1, video8_2 = datetime.datetime(2016, 7, 11, 10, 14), datetime.datetime(2016, 7, 11, 11, 19)
+video7_1, video7_2 = datetime.datetime(2016, 7, 15, 8, 31), datetime.datetime(2016, 7, 15, 9, 1)
 
-z = a.pesquisa(video8_1, video8_2, "PontoDeOnibus-pesquisa7")
+z = a.pesquisa(video7_1, video7_2, "PontoDeOnibus-pesquisa9")
+
+
+video8_1, video8_2 = datetime.datetime(2016, 7, 15, 9, 30), datetime.datetime(2016, 7, 15, 10, 10)
+
+z = a.pesquisa(video8_1, video8_2, "PontoDeOnibus-pesquisa9")
 
 
 

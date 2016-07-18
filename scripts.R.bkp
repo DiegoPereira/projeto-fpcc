@@ -1,12 +1,13 @@
 library("earth")
 library("dplyr")
 library(monmlp)
+library(earth)
 
 #Fazer o experimento usando mlp, correlação de mars erandom forest e normal
 # 10 rodadas, intervalo de confiança das rodadas
 
-dados <- read.csv("~/projeto-fpcc/dados_final.csv")
-dados <- select(dados, Quantidade.de.Pessoas, Quantidade.de.Macs, Manha)
+#dados_beta <- read.csv("~/Downloads/dados_beta.csv")
+dados_beta <- read.csv("~/projeto-fpcc/dados2.csv")
 tamanho_treino <- 34
 tamanho_teste <- 4
 
@@ -16,7 +17,7 @@ set.seed(42)
 #obtendo as amostras aleatorias
 
 data1 <- dados_beta[sample(nrow(dados_beta)),]
-data1 <- select(data1, Quantidade.de.Pessoas, Quantidade.de.Macs)
+data1 <- select(data1, Quantidade.de.Pessoas, Quantidade.de.Macs, Manha)
 treino <- data1[c(1:tamanho_treino),]
 teste <- data1[c(tamanho_treino+1:tamanho_teste),]
 
@@ -36,26 +37,15 @@ print(mac_diretamente)
 
 # regressao de mars
 
-fit <- earth(Quantidade.de.Pessoas~., treino)
-summary(fit)
-treino$predictions <- predict(fit, treino)
+x <- treino$Quantidade.de.Pessoas
+y <- select(treino,Quantidade.de.Macs, Manha)
 
-fit <- earth(treino$Quantidade.de.Pessoas~treino$Quantidade.de.Macs)
-summary(fit)
-treino$predictions <- predict(fit, treino)
-
-fit <- earth(Quantidade.de.Pessoas~Quantidade.de.Macs, data=treino)
-summary(fit)
-
+fit <- earth(x = x, y=y)
+treino$predictions <- predict(fit, treino$Quantidade.de.Macs)
 
 calc_r2(teste$Quantidade.de.Pessoas, teste$predictions, teste)
 
-
-
-
-
-
-# rmse <- mean((teste$Quantidade.de.Pessoas - predictions)^2)
+rmse <- mean((teste$Quantidade.de.Pessoas - predictions)^2)
 print(rmse)
 
 
@@ -97,14 +87,5 @@ performance( prediction( z, y ), "auc" )@y.values[[1]]
 
 
 
-### Com naza
 
-cor(treino)
-cor.test(dados$Quantidade.de.Macs, dados$Quantidade.de.Pessoas)
-
-
-
-#Caret
-http://rpubs.com/nazareno/regressao-previsao
-http://r4ds.had.co.nz/model.html
 

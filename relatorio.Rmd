@@ -1,0 +1,154 @@
+---
+title: Identificando o quão movimento está um ambiente a partir da quantidade de MACs
+  no local
+author: "Diego Pereira"
+date: "16-07-2016"
+output: html_document
+---
+
+## 1 - Contextualização
+
+Falar sobre: Problema, casos de uso, solução
+
+## 2 - Planejamento
+
+Falar que decidimos coletar dados de um ponto de onibus em frente a ufcg, na área: (adicionar imagens)
+
+## 3 - Coleta de dados
+
+A coleta foi realizada entre os dias 28/06/2016 e 15/07/2016 em horários aleatórios, o horário não pôde ser fixo porque neste período na cidade há vários dias com chuva. Nessa coleta o ponto de ônibus foi filmado para podermos contar as pessoas, assim como os macs foram observados através de um equipamento próprio nosso. Nos dados que serão agregados a cada 5 minutos, nesse tempo a quantidade total de macs e de ....
+
+## 4 - Sumarização dos dados
+
+Esse conjunto de dados possui 67 observações, apresentam 3 campos: o primeiro refere-se à quantidade de pessoas, o segundo à quantidade de MACs e o terceiro é uma variável booleana que indica se é manhã.
+
+```{r, echo=FALSE}
+head(dados)
+```
+
+Podemos indicar que há uma relação entre as quantidade de MACs e de pessoas através do teste de correlação, tendo assim com 95% de confiança que os valores são relacionados.
+
+```{r, echo=FALSE}
+cor.test(dados$Quantidade.de.Macs, dados$Quantidade.de.Pessoas)
+```
+
+```{r, echo=FALSE}
+plot(dados$Quantidade.de.Macs, dados$Quantidade.de.Pessoas)
+```
+
+Dividindo a quantidade de pessoas pela quantidade de MACs, temos um outlier, e iremos remove-lo.
+
+```{r, echo=FALSE}
+plot(dados$Quantidade.de.Pessoas/dados$Quantidade.de.Macs)
+```
+
+```{r, echo=FALSE}
+dados <- dplyr::filter(dados, Quantidade.de.Pessoas/Quantidade.de.Macs < 15)
+```
+
+## 5 - O experimento
+
+
+Agora possuímo 66 observações, usaremos X para treinamento e teste (através da validação cruzada) e Y para validação do modelo.
+
+#TODO
+```{r, echo=FALSE}
+tamanho_treino <- 50
+tamanho_val <- 16
+
+data1 <- dados[sample(nrow(dados)),]
+data1 <- dplyr::select(data1, Quantidade.de.Pessoas, Quantidade.de.Macs, Manha)
+treino <- data1[c(1:tamanho_treino),]
+teste <- data1[c(tamanho_treino+1:tamanho_teste),]
+
+cor.test(treino$Quantidade.de.Pessoas, treino$Quantidade.de.Macs)
+data1 <- dados
+```
+
+
+### Mapeamento direto
+
+O mapeamento direto representa pouco mias de 0.6%
+```{r, echo=FALSE}
+calc_r2 <- function(var1, var2, dados){
+  r2 <- lm(var1 ~ var2, dados)
+  return(summary(r2)$r.squared )
+}
+
+mac_diretamente <- calc_r2(dados_beta$Quantidade.de.Pessoas, dados_beta$Quantidade.de.Macs, dados_beta)
+print(mac_diretamente)
+
+```
+
+### Regressão linear (começar a usar caret)
+
+Pouco mais de 15%
+```{r, echo=FALSE}
+
+ctrl <- trainControl(method = "cv", number = 10)
+
+lmFit <- train(Quantidade.de.Pessoas~. , 
+               data = dados, 
+               method = "lm", 
+               trControl = ctrl,
+               metric = "Rsquared")
+
+summary(lmFit)
+plot(varImp(lmFit))
+```
+
+### MARS
+
+25%
+```{r, echo=FALSE}
+marsGrid <- expand.grid(.degree = 1:2, .nprune = 2:40)
+
+marsFit <- train(Quantidade.de.Pessoas~. , 
+               data = dados, 
+               method = "earth", 
+               trControl = ctrl,
+               tuneGrid = marsGrid,
+               metric = "Rsquared")
+
+summary(marsFit)
+marsFit
+plot(varImp(marsFit))
+```
+
+### Rede Neural
+
+25%
+```{r, echo=FALSE}
+
+nnetGrid <- expand.grid(.decay = c(0, 0.01, .1),
+.size = c(1:10),
+.bag = FALSE)
+
+nnetTune <- train(Quantidade.de.Pessoas~. , 
+            data = dados, 
+            method = "avNNet",
+            tuneGrid = nnetGrid,
+            trControl = ctrl,
+            ## Automatically standardize data prior to modeling
+            ## and prediction
+            #preProc = c("center", "scale"),
+            #linout = TRUE,
+            #trace = FALSE,
+            #MaxNWts = 10 * (ncol(trainXnnet) + 1) + 10 + 1,
+            metric = "Rsquared",
+            maxit = 500)
+
+```
+
+## Random Forest
+
+18%
+```{r, echo=FALSE}
+rfModel <- train(Quantidade.de.Pessoas~. , 
+               data = dados, 
+               method = "rf", 
+               trControl = ctrl,
+               metric = "Rsquared")
+
+```
+
